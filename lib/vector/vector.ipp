@@ -237,12 +237,17 @@ void Vector<T>::Erase(std::size_t begin_pos, std::size_t end_pos) {
         size_ = size_ - (end_pos - begin_pos);
         return;
     }
-    if constexpr (std::is_trivially_copyable_v<T>) {
+    if constexpr (std::is_trivially_copyable_v<T> and
+                  std::is_trivially_destructible_v<T>) {
         std::memcpy(data_ + begin_pos, data_ + end_pos,
                     (size_ - end_pos) * sizeof(T));
     } else {
-        std::uninitialized_move(data_ + end_pos, data_ + size_,
-                                data_ + begin_pos);
+        size_t cur_pos = begin_pos;
+        for (std::size_t i = end_pos; i < size_; ++i) {
+            std::uninitialized_move(data_ + i, data_ + i + 1, data_ + cur_pos);
+            std::destroy_at(data_ + i);
+            cur_pos++;
+        }
     }
     size_ = size_ - (end_pos - begin_pos);
 }
