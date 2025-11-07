@@ -244,7 +244,7 @@ void Vector<T>::Erase(std::size_t begin_pos, std::size_t end_pos) {
     } else {
         size_t cur_pos = begin_pos;
         for (std::size_t i = end_pos; i < size_; ++i) {
-            std::uninitialized_move(data_ + i, data_ + i + 1, data_ + cur_pos);
+            std::construct_at(data_ + cur_pos, std::move(data_ + i));
             std::destroy_at(data_ + i);
             cur_pos++;
         }
